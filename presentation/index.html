@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-background="lightblue">
+                    <h3>Концепция</h3>
+                    <img src="img/flappy.png">
+                    <ul>
+                        <li>Клон Flappy birds с жизнями и сложностями;</li>
+                        <li>Бесконечный скролл;</li>
+                        <li>Разные спрайты и размеры птиц на разных сложностях;</li>
+                        <li>Техника парного программирования.</li>
+                    </ul>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Render cycle</h3>
+                    <b>Рендеринг</b> - своими словами - процесс получения изображения по модели, в нашем случае моделью являются структуры объектов игры - птицы, трубы, фон. <b>Цикл рендеринга</b>, или render cycle - функция, бесконечно отрисовывающая кадры на контексте (в нашем случае ограничено 60 раз в секунду). Таким образом, количество кадров в секунду (fps) игры будет равен 1/dt, где dt - время рендеринга одного кадра.
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Основные этапы цикла рендеринга</h3>
+                    <ul>
+                        <li>handleInput(dt); - обработка ввода пользователя (клавиатуры, мыши)</li>
+                        <li>updateEntities(dt); - отработка физики, обновление положения объектов по правилам физического движка или иным правилам</li>
+                        <li>checkCollisions(); - просчет взаимодействия (столкновений) объектов</li>
+                        <li>render(); - непосредственная отрисовка спрайтов</li>
+                        <li>обновление HUD (жизней, очков)</li>
+                    </ul>
+                </section>
+                
+                <section data-background="lightblue">
+                    <h3>Код цикла рендеринга</h3>
+                    <pre><code data-trim data-noescape>
+                        function main() {
+                            var now = Date.now();
+                            var dt = (now - lastTime) / 1000.0;
+                        
+                            update(dt);
+                            render();
+                        
+                            lastTime = now;
+                                requestAnimFrame(main);
+                        };
+                    </code></pre>
+                    <pre><code data-trim data-noescape>
+                        function update(dt) {
+                            gameTime += dt;
+                            handleInput(dt);
+                            updateEntities(dt);
+                            checkCollisions();
+                            checkPlayerScore();
+                            scoreEl.innerHTML = score;
+                        };
+                    </code></pre>
+                    
+                </section>
+                
+                <section data-background="lightblue">
+                    <h3>Физический движок</h3>
+                    <img src="img/gravity.png"/>
+                    <pre><code data-trim data-noescape>
+                        function updateEntities(dt) {
+                            //  ......
+                            player.speedY += g * dt; //  apply gravity
+                            player.pos[1] += player.speedY * dt;
+                            //  ......
+                        }
+                        function handleInput(dt) {
+                            if (input.isDown('SPACE')) {
+                                //  ......
+                                player.speedY = impulse; //  apply impulse at space
+                            }
+                        }
+                    </code></pre>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Физический движок</h3>
+                    В реальной жизни при взаимодействии двух объектов (птицы и воображаемой ноги) скорость меняется по закону сохранения импульса. В нашей игре настоящая физика нам не нужна (мы пробовали!), т.к. играть становится слишком тяжело, поэтому при взаимодействии птице просто присваивается некая скорость, направленная вверх, при этом сила гравитации никогда не перестает действовать.
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Коллизии</h3>
+                    <ul>
+                    Обнаружение столкновений — вычисление пересечений между собой двух или больше объектов. В нашей игре достаточно вычислить, пересекаются ли между собой боксы объектов.
+                    </ul>
+                    <ul>
+                        <img src="img/col1.png"/>
+                        <li>если верх B находится ПОД низом А - A находится полностью над B ,или</li>
+                        
+                    </ul>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <ul>
+                        <img src="img/col2.png"/>
+                        <li>верх A находится ПОД низом B - А находится полностью НАД B ,или</li>
+                        <img src="img/col3.png"/>
+                        <li>если левая сторона B находится правее правой стороны А - B левее А ,или</li>
+                    </ul>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <ul>
+                        <img src="img/col4.png"/>
+                        <li>если левая сторона A находится правее правой стороны B - A левее B</li>
+                    </ul>
+                    <ul>
+                    <br/>При совпадении условий по ИЛИ мы можем говорить, что боксы НЕ пересекаются, и пересекаются в противном случае.
+                    </ul>
+                </section>
+                
+                <section data-background="lightblue">
+                    <h3>Начисление очков</h3>
+                    <ul>
+                        Для начисления очка игроку на каждом цикле update мы проверяем, не стал ли левый край бокса птицы правее правого края последней трубы
+                    </ul>
+                    <img src="img/score.png"/>
+                </section>
+                
+                <section data-background="lightblue">
+                    <h3>Начисление очков</h3>
+                    <pre><code data-trim data-noescape>
+                        if (pipes.length) {
+                            const lastPipe = pipes[0];
+                            if (player.lastPipe !== lastPipe && 
+                                player.pos[0] > lastPipe.pos[0]) {
+                                player.lastPipe = lastPipe;
+                                score += 1;
+                            }
+                        }
+                    </code></pre>
+                    Как только мы "пролетели" трубу, мы записываем ее в переменную lastPipe объекта игрока, чтобы больше не начислять за ее пролет очки.
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Параллакс</h3>
+                    <ul>
+                        Паралла́кс — изменение видимого положения объекта относительно удалённого фона в зависимости от положения наблюдателя (вики).
+                        
+                    </ul>
+                    <img src="img/parallax.png"/>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <h3>Параллакс</h3>
+                    <ul>
+                        <li>Для создания эффекта параллакса мы двигаем фон чуть медленнее, чем весь основной мир (мы остановились на 0.5 скорости мира). Это создает эффект "глубины" при любой скорости птицы.</li>
+                        <li>Для обеспечения непрерывности скроллинга мы добавляем новый спрайт фона, когда правый край старого (красная линия) равняется с правой границей контекста.</li>
+                        <li>Не стоит также забывать удалять старый спрайт, как только х-координата его правого края становится меньше нуля, иначе утечки памяти со временем могут стать огромными, особенно при более сложном фоне.</li>
+                        
+                    </ul>
+                </section>
+                
+                <section data-background="lightblue">
+                    <h3>Создание уровней сложности</h3>
+                    <ul>Уровни сложности в нашей игре различаются<br/><br/>
+                        <li>скоростью полета птицы, а точнее скоростью, с которой мир летит на птицу</li>
+                        <li>зазором между трубами</li>
+                        <li>спрайтом птицы</li><br/>
+                        Эти параметры берутся из конфига игры, который подгружается для каждой сложности свой. В итоге мы имеем три конфига с одинаковыми ключами, но разными значениями.
+                    </ul>
+                </section>
+                
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <pre><code data-trim data-noescape>
+                        var config = null;
+                        
+                        var configEasy = {
+                            worldSpeed: 2,
+                            holeSize: 200,
+                            spriteSpace: 20,
+                            sprite: playerSprites.sprite1,
+                        };
+                        
+                        var configMedium = {
+                            //  ....
+                        };
+                        
+                        var configHard = {
+                            //  ....
+                        };
+                        //  ....
+                        function init() {
+                            document.getElementById('play-easy').addEventListener('click', function () {
+                            config = configEasy;
+                        }
+                        //  ....
+                    </code></pre>thankyou
+                </section>
+                <section data-background="rgba(0, 0, 0, 0.2)">
+                    <img src="img/thankyou.png"/>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>

@@ -210,6 +210,13 @@ function updateEntities(dt) {
         }
     }
 
+    if(backgrounds.length) {
+        var lastCity = backgrounds[0];
+        if (lastCity.pos[0] + 1574 < 0) {
+            backgrounds.shift();
+        }
+    }
+
     if (pipes.length) {
         var lastPipe = pipes[pipes.length - 1];
         if (lastPipe.pos[0] < canvas.width - nextPipeDistance) {

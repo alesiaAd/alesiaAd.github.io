@@ -1,0 +1,3 @@
+[submodule "youtubeapp"]
+	path = youtubeapp
+	url = ../../youtube/api-samples.git

@@ -5,12 +5,12 @@
         <link href="css/search.css" rel="stylesheet">
         <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
     </head>
-    <body>
+    <body onresize="controller.updateUI()">
         <script src="js/model.js"></script>
         <script src="js/view.js"></script>
         <script src="js/controller.js"></script>
         <header id="buttons">
-            <label> <input id="query" type="text" placeholder="Type here to search..."/><button id="search-button" onclick="search()">Search</button></label>
+            <label> <input id="query" type="text" placeholder="Type here to search..." onkeydown="isEnter(event)"/><button id="search-button" onclick="search()">Search</button></label>
         </header>
         <div id="search-container">
         </div>

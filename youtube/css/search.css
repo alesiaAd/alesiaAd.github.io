@@ -2,7 +2,6 @@ html,
 body {
     background-color: #3B444B;
     height: 100%;
-    overflow-x: hidden;
     margin: 0;
     padding: 0;
 }
@@ -26,9 +25,10 @@ label {
     transform: translate(-50%, -50%);
     top: 50%;
     left: 50%;
+    white-space:nowrap;
 }
 input {
-    width: 300px;
+    width: 400px;
 }
 
 #search-container {
@@ -46,12 +46,14 @@ input {
     position: relative;
     width: 250px;
     background-color: white;
+    margin: 10px;
 }
 .preview {
     width: 250px;
 }
 .headline {
     position: absolute;
+    left: 0;
     top: 10%;
     text-align: center;
     background-color: lightgreen;
@@ -86,9 +88,6 @@ p {
 
 #pagination a:hover {
     background-color: lightblue;
-}
-#pagination a:focus {
-    background-color: lightgreen;
 }
 .selected {
     background-color: lightgreen;
